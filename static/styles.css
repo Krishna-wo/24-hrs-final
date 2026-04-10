@@ -53,7 +53,6 @@ textarea { min-height: 90px; resize: vertical; }
   .stats, .grid-2 { grid-template-columns: 1fr; }
 } */
 
-
 /* ── Reset & Base ─────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -94,7 +93,6 @@ body { display: flex; height: 100vh; overflow: hidden; background: var(--bg); co
 .nav-btn .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 .nav-btn:hover { background: rgba(59,130,246,0.18); color: #e2e8f0; }
 .nav-btn.active { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.4); }
-.nav-btn.secondary:hover { background: rgba(255,255,255,0.07); color: #e2e8f0; }
 .nav-btn.danger { color: #fca5a5; }
 .nav-btn.danger:hover { background: rgba(220,38,38,0.2); }
 .sidebar-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 3px; border-top: 1px solid rgba(255,255,255,0.07); padding-top: 10px; }
@@ -103,6 +101,7 @@ body { display: flex; height: 100vh; overflow: hidden; background: var(--bg); co
 .profile-chip img { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
 .profile-chip strong { display: block; font-size: 12px; color: #e2e8f0; }
 .profile-chip small { color: #64748b; font-size: 10px; }
+.chip-info { display: flex; flex-direction: column; }
 
 /* ── Main / Views ── */
 main { flex: 1; position: relative; overflow: hidden; min-width: 0; }
@@ -148,8 +147,8 @@ button.success { background: #16a34a; }
 button.success:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
 button.warning { background: #d97706; }
 button.warning:hover { background: #b45309; box-shadow: 0 4px 12px rgba(217,119,6,0.3); }
-button.danger-btn { background: #dc2626; }
-button.danger-btn:hover { background: #b91c1c; box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
+button.danger { color: #fca5a5; }
+button.danger:hover { background: rgba(220,38,38,0.2); }
 
 /* ── Forms ── */
 #report-view, #dashboard-view, .page-pad { padding: 22px; overflow-y: auto; height: 100%; }
@@ -181,6 +180,7 @@ textarea { min-height: 88px; resize: vertical; }
 
 .hint { background: linear-gradient(135deg,#fef2f2,#fee2e2); color: #991b1b; border: 1px solid #fecaca; padding: 10px 13px; border-radius: var(--radius-sm); font-size: 12.5px; display: flex; align-items: center; gap: 7px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.hidden { display: none !important; }
 
 .file-upload-wrap { border: 1.5px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 14px; text-align: center; cursor: pointer; transition: var(--transition); background: var(--surface2); }
 .file-upload-wrap:hover { border-color: var(--blue); background: #eff6ff; }
@@ -212,7 +212,6 @@ textarea { min-height: 88px; resize: vertical; }
 /* ── Incident / History Rows ── */
 .incident-row, .history-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 16px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: var(--transition); }
 .incident-row:hover, .history-row:hover { box-shadow: var(--shadow); border-color: var(--border-strong); }
-.incident-row.resolved-row { opacity: 0.55; }
 .ir-left { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
 .ir-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ir-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
@@ -231,7 +230,6 @@ textarea { min-height: 88px; resize: vertical; }
 
 /* ── Modal ── */
 .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: flex; align-items: center; justify-content: center; z-index: 1500; backdrop-filter: blur(4px); padding: 16px; }
-.hidden { display: none !important; }
 .modal-content { width: min(94vw,500px); background: var(--surface); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column; }
 .modal-header { padding: 16px 18px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .modal-header h3 { font-size: 16px; font-weight: 700; }

@@ -167,7 +167,7 @@
 </body>
 </html> -->
 
-
+<!-- 
 <!doctype html>
 <html lang="en">
 <head>
@@ -218,7 +218,6 @@
   </aside>
 
   <main>
-    <!-- ── Map View ── -->
     <section id="map-view" class="view active">
       <div class="search-wrap">
         <input id="search-input" type="text" placeholder="Search location…" />
@@ -232,7 +231,6 @@
         <button id="toggle-filters-btn" class="muted">⚙️ Filters</button>
       </div>
 
-      <!-- Compact Filters Panel -->
       <div id="filters-panel" class="filters-panel hidden">
         <div class="filters-header">
           <h4>Quick Filters</h4>
@@ -283,11 +281,303 @@
       </div>
     </section>
 
-    <!-- ── Report View ── -->
     <section id="report-view" class="view">
       <form id="report-form" class="panel">
         <div class="panel-header">
           <span class="ph-icon"></span>
+          <div>
+            <h2>Report an Incident</h2>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📍 Pick Location on Map <span class="req">*</span></label>
+          <div id="picker-map"></div>
+          <div class="coords-bar">
+            <span class="cb-label">Selected Coords</span>
+            <span id="coords-label">Getting your location...</span>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Incident Type <span class="req">*</span></label>
+            <select name="type" id="incident-type" required>
+              <option value="">Choose type…</option>
+              <option>Flood</option>
+              <option>Landslide</option>
+              <option>Road Block</option>
+              <option>Bridge Damage</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Severity <span class="req">*</span></label>
+            <select name="severity" required>
+              <option>Low</option>
+              <option>Medium</option>
+              <option>Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="road-range-wrap" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="road-measure-hint">
+            <span style="font-size:18px">🛣️</span>
+            <div>
+              <strong>Road Blockage Measurement</strong><br>
+              Click <strong>Point A</strong> then <strong>Point B</strong> on the map above to auto-measure distance, or enter manually below.
+              <div class="measure-steps" id="measure-steps" style="margin-top:6px;">
+                <span class="step-badge pending" id="step-a">A: Not set</span>
+                <span style="color:#94a3b8;font-size:13px">→</span>
+                <span class="step-badge pending" id="step-b">B: Not set</span>
+              </div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Blockage Range (meters)</label>
+              <input type="number" name="blockage_range_m" id="blockage-range-input" min="1" step="0.1" placeholder="Auto-filled or enter manually" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Est. Resolution Time (minutes)</label>
+              <input type="number" name="estimated_resolution_minutes" min="1" step="1" placeholder="e.g. 60" />
+            </div>
+          </div>
+          <div class="hint hidden" id="critical-hint">⚠️ Road blockage ≥ 10m is automatically escalated to <strong>Critical</strong>.</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Authority Assigned</label>
+            <select name="authority_assigned" id="authority-assigned">
+              <option value="false">No authority assigned yet</option>
+              <option value="true">Authority assigned</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Authority / Agency Name</label>
+            <input type="text" name="authority_name" id="authority-name" placeholder="e.g. DPWH, BFP, Police" disabled />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Casualties / Injured Count</label>
+          <input type="number" name="casualties" min="0" step="1" placeholder="0" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description <span class="req">*</span></label>
+          <textarea name="description" required placeholder="Describe the incident in detail…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Photo (optional)</label>
+          <div class="file-upload-wrap" onclick="document.getElementById('photo').click()">
+            <input type="file" id="photo" accept="image/*" />
+            <label for="photo">
+              <span class="fu-icon">📷</span>
+              <span>Click to upload a photo</span>
+              <small>JPEG, PNG, WebP — max 5MB</small>
+            </label>
+            <div id="file-name-display"></div>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">🚨 Submit Incident Report</button>
+      </form>
+    </section>
+
+    <section id="dashboard-view" class="view">
+      <div class="stats">
+        <div class="stat-card total">
+          <div class="sc-label">Total Incidents</div>
+          <div class="sc-value" id="total-count">0</div>
+          <div class="sc-icon">📊</div>
+        </div>
+        <div class="stat-card critical">
+          <div class="sc-label">Critical Active</div>
+          <div class="sc-value" id="critical-count">0</div>
+          <div class="sc-icon">🔴</div>
+        </div>
+        <div class="stat-card avg">
+          <div class="sc-label">Avg Response (min)</div>
+          <div class="sc-value" id="avg-response">—</div>
+          <div class="sc-icon">⏱️</div>
+        </div>
+      </div>
+      <div class="section-header">
+        <h3>Active Incidents</h3>
+        <small id="dash-count"></small>
+      </div>
+      <div id="incident-list" class="list"></div>
+    </section>
+
+    <section id="history-view" class="view page-pad">
+      <div class="panel compact">
+        <div class="panel-header">
+          <span class="ph-icon">📋</span>
+          <div><h2>Resolved Incident History</h2></div>
+        </div>
+        <div id="history-list" class="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="incident-modal" class="modal hidden">
+    <div class="modal-content" id="modal-content-wrap">
+      <div class="modal-header">
+        <h3 id="modal-title">Incident Details</h3>
+        <button class="modal-close" id="close-modal">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <div id="profile-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>User Profile</h3>
+        <button class="modal-close" id="close-profile">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="info-grid">
+          <div class="info-item"><div class="ii-label">Name</div><div class="ii-val">Community Responder</div></div>
+          <div class="info-item"><div class="ii-label">Role</div><div class="ii-val">Field Reporter</div></div>
+          <div class="info-item"><div class="ii-label">Region</div><div class="ii-val">Default Zone</div></div>
+          <div class="info-item"><div class="ii-label">Email</div><div class="ii-val">community@local</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html> -->
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community Alert — Flood & Road Blockage Reporting</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🚨</div>
+      <div>
+        <div class="logo-text">Community Alert</div>
+        <div class="logo-sub">Incident Reporting</div>
+      </div>
+    </div>
+
+    <span class="nav-section-label">NAVIGATION</span>
+    <button data-view="map" class="nav-btn active">
+      <span class="nav-icon">🗺️</span><span>Live Map</span>
+    </button>
+    <button data-view="report" class="nav-btn">
+      <span class="nav-icon">📝</span><span>Report</span>
+    </button>
+    <button data-view="dashboard" class="nav-btn">
+      <span class="nav-icon">📊</span><span>Dashboard</span>
+    </button>
+    <button data-view="history" class="nav-btn">
+      <span class="nav-icon">📋</span><span>History</span>
+    </button>
+
+    <div class="sidebar-bottom">
+      <div class="profile-chip" id="profile-btn">
+        <img src="https://api.dicebear.com/9.x/initials/svg?seed=CR" alt="Profile" />
+        <div class="chip-info">
+          <strong>Responder</strong>
+          <small>community@local</small>
+        </div>
+      </div>
+      <button id="logout-btn" class="nav-btn danger">
+        <span class="nav-icon">🚪</span><span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- ── Map View ── -->
+    <section id="map-view" class="view active">
+      <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="Search location…" />
+        <button id="search-btn">Search</button>
+        <button id="locate-btn" class="muted">📍 Me</button>
+        <select id="basemap-select">
+          <option value="street">Street</option>
+          <option value="satellite">Topo</option>
+          <option value="terrain">HOT</option>
+        </select>
+        <button id="toggle-filters-btn" class="muted">⚙️ Filters</button>
+      </div>
+
+      <!-- Compact Filters Panel -->
+      <div id="filters-panel" class="filters-panel hidden">
+        <div class="filters-header">
+          <h4>Quick Filters</h4>
+          <button id="close-filters-btn" class="close-filters">✕</button>
+        </div>
+        <div class="filters-content">
+          <div class="filter-row">
+            <select id="filter-severity" class="filter-select">
+              <option value="">All Severity</option>
+              <option value="Critical">Critical</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+            <select id="filter-status" class="filter-select">
+              <option value="">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Under Response">Under Response</option>
+            </select>
+          </div>
+          <div class="filter-row">
+            <select id="filter-type" class="filter-select">
+              <option value="">All Types</option>
+              <option value="Flood">Flood</option>
+              <option value="Landslide">Landslide</option>
+              <option value="Road Block">Road Block</option>
+              <option value="Bridge Damage">Bridge Damage</option>
+            </select>
+            <select id="filter-verified" class="filter-select">
+              <option value="">All Records</option>
+              <option value="1">Verified</option>
+              <option value="0">Unverified</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button id="apply-filters" type="button" class="filter-apply">Apply</button>
+            <button id="reset-filters" type="button" class="filter-reset">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="map"></div>
+      <div class="legend-box">
+        <strong>Severity</strong>
+        <div class="legend-item"><span class="dot" style="background:#dc2626"></span>Critical</div>
+        <div class="legend-item"><span class="dot" style="background:#d97706"></span>Medium</div>
+        <div class="legend-item"><span class="dot" style="background:#16a34a"></span>Low</div>
+      </div>
+    </section>
+
+    <!-- ── Report View ── -->
+    <section id="report-view" class="view">
+      <form id="report-form" class="panel">
+        <div class="panel-header">
+          <span class="ph-icon">📝</span>
           <div>
             <h2>Report an Incident</h2>
           </div>
