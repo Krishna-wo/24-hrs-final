@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community Flood & Road Blockage Reporting</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="profile-chip">
+      <img src="https://api.dicebear.com/9.x/initials/svg?seed=User" alt="Profile" />
+      <div>
+        <strong>Responder</strong>
+        <small>community@local</small>
+      </div>
+    </div>
+    <h1>Community Alert</h1>
+    <button data-view="map" class="nav-btn active">Map</button>
+    <button data-view="report" class="nav-btn">Report</button>
+    <button data-view="dashboard" class="nav-btn">Dashboard</button>
+    <button data-view="controls" class="nav-btn">Controls</button>
+    <button data-view="history" class="nav-btn">History</button>
+    <button id="profile-btn" class="nav-btn secondary">Profile</button>
+    <button id="logout-btn" class="nav-btn danger">Logout</button>
+  </aside>
+
+  <main>
+    <section id="map-view" class="view active">
+      <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="Search location..." />
+        <button id="search-btn">Search</button>
+        <button id="locate-btn">My Location</button>
+        <select id="basemap-select">
+          <option value="street">Street</option>
+          <option value="satellite">Satellite</option>
+          <option value="terrain">Terrain</option>
+        </select>
+      </div>
+      <div id="map"></div>
+      <div class="legend-box">
+        <strong>Severity Legend</strong>
+        <div><span class="dot red"></span> Critical</div>
+        <div><span class="dot yellow"></span> Medium</div>
+        <div><span class="dot green"></span> Low</div>
+      </div>
+    </section>
+
+    <section id="report-view" class="view">
+      <form id="report-form" class="panel">
+        <h2>Report Incident</h2>
+        <div id="picker-map"></div>
+        <div class="coords"><span id="coords-label">No location selected</span></div>
+        <div class="grid-2">
+          <select name="type" id="incident-type" required>
+            <option value="">Incident type</option>
+            <option>Flood</option>
+            <option>Landslide</option>
+            <option>Road Block</option>
+            <option>Bridge Damage</option>
+          </select>
+          <select name="severity" required>
+            <option>Low</option>
+            <option>Medium</option>
+            <option>Critical</option>
+          </select>
+        </div>
+        <div id="road-range-wrap" class="grid-2 hidden">
+          <input type="number" name="blockage_range_m" min="1" step="0.1" placeholder="Road blockage range (meters)" />
+          <input type="number" name="estimated_resolution_minutes" min="1" step="1" placeholder="Estimated resolution time (minutes)" />
+        </div>
+        <div class="hint hidden" id="critical-hint">Road blockage range ≥ 10m is treated as Critical.</div>
+        <div class="grid-2">
+          <select name="authority_assigned" id="authority-assigned">
+            <option value="false">No authority assigned yet</option>
+            <option value="true">Authority assigned</option>
+          </select>
+          <input type="text" name="authority_name" id="authority-name" placeholder="Authority / agency name" disabled />
+        </div>
+        <input type="number" name="casualties" min="0" step="1" placeholder="Casualties / injured count" />
+        <textarea name="description" required placeholder="Description"></textarea>
+        <input type="file" id="photo" accept="image/*" />
+        <button type="submit">Submit Report</button>
+      </form>
+    </section>
+
+    <section id="dashboard-view" class="view">
+      <div class="stats">
+        <div class="card"><h3>Total</h3><p id="total-count">0</p></div>
+        <div class="card"><h3>Critical</h3><p id="critical-count">0</p></div>
+        <div class="card"><h3>Avg Response (min)</h3><p id="avg-response">0</p></div>
+      </div>
+      <div id="incident-list" class="list"></div>
+    </section>
+
+    <section id="controls-view" class="view page-pad">
+      <div class="panel compact">
+        <h2>Map Controllers</h2>
+        <div class="grid-2">
+          <select id="filter-severity">
+            <option value="">All severities</option>
+            <option value="Critical">Critical</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select id="filter-status">
+            <option value="">All statuses</option>
+            <option value="Active">Active</option>
+            <option value="Under Response">Under Response</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
+        <div class="grid-2">
+          <select id="filter-type">
+            <option value="">All incident types</option>
+            <option value="Flood">Flood</option>
+            <option value="Landslide">Landslide</option>
+            <option value="Road Block">Road Block</option>
+            <option value="Bridge Damage">Bridge Damage</option>
+          </select>
+          <select id="filter-verified">
+            <option value="">All records</option>
+            <option value="1">Verified only</option>
+            <option value="0">Unverified only</option>
+          </select>
+        </div>
+        <div class="grid-2">
+          <input type="number" id="filter-min-votes" min="0" placeholder="Minimum votes" />
+          <input type="datetime-local" id="filter-date-from" />
+        </div>
+        <div class="grid-2">
+          <input type="datetime-local" id="filter-date-to" />
+          <input type="text" id="filter-keyword" placeholder="Description keyword" />
+        </div>
+        <div class="button-row">
+          <button id="apply-filters" type="button">Apply Filters</button>
+          <button id="reset-filters" type="button" class="muted">Reset</button>
+          <button id="center-all" type="button" class="muted">Fit All Pins</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="history-view" class="view page-pad">
+      <div class="panel compact">
+        <h2>Resolved Incident History</h2>
+        <div id="history-list" class="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="incident-modal" class="modal hidden">
+    <div class="modal-content" id="modal-content"></div>
+  </div>
+  <div id="profile-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>User Profile</h3>
+      <p><strong>Name:</strong> Community Responder</p>
+      <p><strong>Role:</strong> Field Reporter</p>
+      <p><strong>Region:</strong> Default Zone</p>
+      <button id="close-profile">Close</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
